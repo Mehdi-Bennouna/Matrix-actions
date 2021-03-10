@@ -64,6 +64,7 @@ void afficher_cadre(liste_choix choix);
 void print_menu(WINDOW *fenetre_menu, int selection, liste_choix choix);
 int afficher_menu(liste_choix choix);
 int nombre_chifres(int x);
+void popup_erreur(int x);
 
 int *max_colonnes(Matrice m);
 
@@ -140,35 +141,73 @@ void somme_deux_matrices()
 {
     int ns_choix;
 
-    char *choix_somme_deux_matrices[] = {" Somme de deux matrices ", "Remplir Matrice 1", "Remplir Matrice 2", "Calculer", "retour"};
+    char *choix_somme_deux_matrices[] = {" Somme de deux matrices ", "Remplir Matrice 1 (vide)", "Remplir Matrice 2 (vide)", "Calcul", "retour"};
 
-    liste_choix s_choix = {4, 4, choix_somme_deux_matrices};
+    liste_choix s_choix = {5, 5, choix_somme_deux_matrices};
 
     Matrice m1, m2, m3;
+
+    int valide = 0;
 
     while (ns_choix != 4)
     {
         ns_choix = afficher_menu(s_choix);
 
+        if ((m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements) && (m2.nombre_colonnes * m2.nombre_lignes == m2.nombre_elements))
+        {
+            valide = 1;
+        }
+
         if (ns_choix == 1)
         {
             m1 = creation_matrice();
             m1 = remplissage_matrice(m1);
+            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
+            {
+                choix_somme_deux_matrices[1] = "Remplir Matrice 1 (remplie)";
+            }
         }
 
         if (ns_choix == 2)
         {
             m2 = creation_matrice();
             m2 = remplissage_matrice(m2);
+            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
+            {
+                choix_somme_deux_matrices[2] = "Remplir Matrice 1 (remplie)";
+            }
         }
 
         if (ns_choix == 3)
         {
+            if (valide == 1)
+            {
+                // do the job
+            }
+            else
+            {
+                popup_erreur(0);
+            }
+
             //que si m1 et m2 sont valides
             //calcul
             //affichage de la matrice resultat
         }
     }
+}
+
+void popup_erreur(int x)
+{
+    WINDOW *fenetre_erreur;
+    int posx, posy;
+    char *liste_erreurs[] = {"Matrices invalides"};
+    posx = 51 - (strlen(liste_erreurs[x]) / 2);
+    posy = 7;
+    fenetre_erreur = newwin(5, 4 + strlen(liste_erreurs[x]), posy, posx);
+    wborder(fenetre_erreur, 0, 0, 0, 0, 0, 0, 0, 0);
+    mvwprintw(fenetre_erreur, 2, 2, liste_erreurs[x]);
+    wrefresh(fenetre_erreur);
+    wgetch(fenetre_erreur);
 }
 
 int nombre_chifres(int x)
@@ -390,6 +429,7 @@ Matrice remplissage_matrice(Matrice m)
     werase(fenetre_matrice);
 
     wrefresh(fenetre_matrice);
+    return m;
 }
 
 Matrice creation_matrice()
