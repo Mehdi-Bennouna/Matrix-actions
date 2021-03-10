@@ -2,6 +2,15 @@
 #include <curses.h>
 #include <windows.h>
 #include <stdlib.h>
+#include <string.h>
+
+typedef struct Matrices
+{
+    int nombre_lignes;
+    int nombre_colonnes;
+    int nombre_elements;
+    int **mat;
+} Matrice;
 
 typedef struct l_choix
 {
@@ -54,6 +63,15 @@ HANDLE rHnd; // Handle to read from the console.
 void afficher_cadre(liste_choix choix);
 void print_menu(WINDOW *fenetre_menu, int selection, liste_choix choix);
 int afficher_menu(liste_choix choix);
+int nombre_chifres(int x);
+
+int *max_colonnes(Matrice m);
+
+Matrice remplissage_matrice(Matrice m);
+
+Matrice creation_matrice();
+
+void somme_deux_matrices();
 
 int main()
 {
@@ -87,6 +105,11 @@ int main()
             choix.nombre_choix_valide = 7;
 
             n_liste_choix = afficher_menu(choix);
+
+            if (n_liste_choix == 1)
+            {
+                somme_deux_matrices();
+            }
         }
 
         if (n_liste_choix == 2)
@@ -111,6 +134,350 @@ int main()
     wgetch(stdscr);
 
     endwin();
+}
+
+void somme_deux_matrices()
+{
+    int ns_choix;
+
+    char *choix_somme_deux_matrices[] = {" Somme de deux matrices ", "Remplir Matrice 1", "Remplir Matrice 2", "Calculer", "retour"};
+
+    liste_choix s_choix = {4, 4, choix_somme_deux_matrices};
+
+    Matrice m1, m2, m3;
+
+    while (ns_choix != 4)
+    {
+        ns_choix = afficher_menu(s_choix);
+
+        if (ns_choix == 1)
+        {
+            m1 = creation_matrice();
+            m1 = remplissage_matrice(m1);
+        }
+
+        if (ns_choix == 2)
+        {
+            m2 = creation_matrice();
+            m2 = remplissage_matrice(m2);
+        }
+
+        if (ns_choix == 3)
+        {
+            //que si m1 et m2 sont valides
+            //calcul
+            //affichage de la matrice resultat
+        }
+    }
+}
+
+int nombre_chifres(int x)
+{
+    int nombre;
+    if (x == 0)
+    {
+        return 1;
+    }
+    else
+    {
+        nombre = 0;
+        while (x != 0)
+        {
+            x /= 10;
+            ++nombre;
+        }
+        return nombre;
+    }
+}
+
+int *max_colonnes(Matrice m)
+{
+    int *t;
+    int i, j;
+
+    t = (int *)malloc(m.nombre_colonnes * sizeof(int));
+    for (i = 0; i < m.nombre_colonnes; i++)
+    {
+        t[i] = 0;
+    }
+
+    for (i = 0; i < m.nombre_colonnes; i++)
+    {
+        for (j = 0; j < m.nombre_lignes; j++)
+        {
+            if (t[i] < nombre_chifres(m.mat[j][i]))
+            {
+                if (m.mat[i][j] < 0)
+                {
+                    t[i] = 1 + nombre_chifres(m.mat[j][i]);
+                }
+                else
+                {
+                    t[i] = nombre_chifres(m.mat[j][i]);
+                }
+            }
+        }
+    }
+    return t;
+}
+
+Matrice remplissage_matrice(Matrice m)
+{
+    char *une_liste[] = {"Remplissage Matrice"};
+    liste_choix s_choix = {1, 1, une_liste};
+    afficher_cadre(s_choix);
+
+    int i;
+    int j;
+    int *tmax;
+    tmax = max_colonnes(m); //calcul des dimesions de depart de la matrice
+
+    int HAUTEUR = (2 * m.nombre_lignes) + 1;
+    int LARGEUR = 0;
+    for (i = 0; i < m.nombre_colonnes; i++)
+    {
+        LARGEUR += tmax[i];
+    }
+    LARGEUR += (2 * m.nombre_colonnes) + 2; //HAUTEUR LARGEUR SONT SET
+    int x = 50 - (LARGEUR / 2);
+    int y = 12 - (HAUTEUR / 2);
+    WINDOW *fenetre_matrice;
+
+    fenetre_matrice = newwin(HAUTEUR, LARGEUR, y, x);
+
+    int posx;
+    int posy;
+    int compteur;
+
+    char n;
+    int temp_n = 0;
+    int cpt_temp = 0;
+    int signe = 1;
+    int altern = 1;
+
+    while (m.nombre_elements < (m.nombre_colonnes * m.nombre_lignes))
+    {
+        wborder(fenetre_matrice, 0, 0, 32, 32, 0, 0, 0, 0);
+
+        posx = 2;
+        posy = 1;
+
+        j = 0;
+        i = 0;
+        compteur = 0;
+        do
+        {
+            j = 0;
+            posx = 2;
+
+            while (j < m.nombre_colonnes && compteur < m.nombre_elements)
+            {
+                mvwprintw(fenetre_matrice, posy, posx, "%d", m.mat[i][j]);
+                compteur++;
+
+                posx = posx + tmax[j] + 2;
+                j++;
+            }
+            posy += 2;
+            i++;
+        } while (i < m.nombre_lignes && compteur < m.nombre_elements);
+
+        i--;
+        posy -= 2;
+        if (j == m.nombre_colonnes)
+        {
+            j = 0;
+            i++;
+            posy += 2;
+            posx = 2;
+        }
+
+        if (temp_n == 0)
+        {
+            if (signe == -1)
+            {
+                wattron(fenetre_matrice, A_REVERSE);
+                mvwprintw(fenetre_matrice, posy, posx, "-");
+                wattroff(fenetre_matrice, A_REVERSE);
+            }
+            else
+            {
+                wattron(fenetre_matrice, A_REVERSE);
+                mvwprintw(fenetre_matrice, posy, posx, " ");
+                wattroff(fenetre_matrice, A_REVERSE);
+            }
+        }
+        else
+        {
+            wattron(fenetre_matrice, A_REVERSE);
+            mvwprintw(fenetre_matrice, posy, posx, "%d", temp_n * signe);
+            wattroff(fenetre_matrice, A_REVERSE);
+        }
+
+        n = wgetch(fenetre_matrice);
+
+        if (n > 47 && n < 58)
+        {
+            temp_n = (temp_n * 10) + (n - '0');
+            cpt_temp++;
+        }
+        else if (n == 45)
+        {
+            signe = -1;
+        }
+        else if (n == 10)
+        {
+            m.mat[i][j] = signe * temp_n;
+            signe = 1;
+            temp_n = 0;
+            cpt_temp = 0;
+            m.nombre_elements++;
+        }
+        else if (n == 8 && (m.nombre_elements != 0 || cpt_temp != 0))
+        {
+            if (cpt_temp != 0)
+            {
+                cpt_temp--;
+                temp_n /= 10;
+            }
+            else
+            {
+                m.nombre_elements--;
+                if (j != 0)
+                {
+                    j--;
+                }
+                else if (i != 0)
+                {
+                    i--;
+                    j = m.nombre_colonnes - 1;
+                }
+                cpt_temp = nombre_chifres(m.mat[i][j]);
+                signe = 1;
+                temp_n = m.mat[i][j];
+            }
+        }
+
+        if (tmax[j] < cpt_temp || tmax[j] < cpt_temp - signe)
+        {
+            LARGEUR++;
+            if (cpt_temp > tmax[j])
+            {
+
+                tmax[j] = cpt_temp;
+            }
+            else
+            {
+                tmax[j] = cpt_temp + 1;
+            }
+            wresize(fenetre_matrice, HAUTEUR, LARGEUR);
+            if (altern == -1)
+            {
+                x--;
+                altern = 1;
+            }
+            else
+            {
+                altern = -1;
+            }
+            mvwin(fenetre_matrice, y, x);
+            wrefresh(fenetre_matrice);
+        }
+
+        werase(fenetre_matrice);
+    }
+
+    werase(fenetre_matrice);
+
+    wrefresh(fenetre_matrice);
+}
+
+Matrice creation_matrice()
+{
+
+    char *une_liste[] = {"Creation matrice"};
+    liste_choix s_choix = {1, 1, une_liste};
+    afficher_cadre(s_choix);
+
+    mvprintw(6, 50 - (strlen("- Donner les dimentions de la matrice -") / 2), "- Donner les dimentions de la matrice -");
+    mvprintw(9, 50 - (strlen("- Donner les dimentions de la matrice -") / 2), "Nombre de lignes : ");
+    mvprintw(11, 50 - (strlen("- Donner les dimentions de la matrice -") / 2), "Nombre de colonnes : ");
+    refresh();
+
+    int k = 0;
+    char c = '\0';
+    char str_n[10];
+    str_n[0] = ' ';
+    str_n[1] = '\0';
+    wattron(stdscr, A_REVERSE);
+    mvprintw(9, 50, "%s", str_n);
+    wattroff(stdscr, A_REVERSE);
+
+    while (c != 10)
+    {
+        c = wgetch(stdscr);
+        if (c > 48 && c < 58 && k < 2)
+        {
+            str_n[k] = c;
+            str_n[k + 1] = '\0';
+            k++;
+            wattron(stdscr, A_REVERSE);
+            mvprintw(9, 50, "%s", str_n);
+            wattroff(stdscr, A_REVERSE);
+        }
+    }
+
+    int n_lignes = atoi(str_n);
+
+    k = 0;
+    c = '\0';
+    str_n[10];
+    str_n[0] = ' ';
+    str_n[1] = '\0';
+    wattron(stdscr, A_REVERSE);
+    mvprintw(11, 52, "%s", str_n);
+    wattroff(stdscr, A_REVERSE);
+    while (c != 10)
+    {
+        c = wgetch(stdscr);
+        if (c > 48 && c < 58 && k < 2)
+        {
+            str_n[k] = c;
+            str_n[k + 1] = '\0';
+            k++;
+            wattron(stdscr, A_REVERSE);
+            mvprintw(11, 52, "%s", str_n);
+            wattroff(stdscr, A_REVERSE);
+        }
+    }
+
+    int n_colonnes = atoi(str_n);
+
+    werase(stdscr);
+
+    Matrice m;
+    m.nombre_elements = 0;
+    m.nombre_colonnes = n_colonnes;
+    m.nombre_lignes = n_lignes;
+
+    m.mat = (int **)malloc(n_lignes * sizeof(int *));
+
+    for (int i = 0; i < n_lignes; i++)
+    {
+        m.mat[i] = (int *)malloc(n_colonnes * sizeof(int));
+    }
+    // to delete
+    int count = 1;
+    for (int i = 0; i < m.nombre_lignes; i++)
+    {
+        for (int j = 0; j < m.nombre_colonnes; j++)
+        {
+            m.mat[i][j] = count;
+            count++;
+        }
+    }
+
+    return m;
 }
 
 void afficher_cadre(liste_choix choix)
@@ -177,7 +544,7 @@ void print_menu(WINDOW *fenetre_menu, int selection, liste_choix choix)
 {
     int x, y, i;
 
-    y = 6;
+    y = 4;
     for (i = 1; i < choix.nombre_choix; ++i)
     {
         if (selection == i + 1) /* Highlight the present choice */
@@ -188,7 +555,7 @@ void print_menu(WINDOW *fenetre_menu, int selection, liste_choix choix)
         }
         else
             mvwprintw(fenetre_menu, y, (25 - strlen(choix.liste[i]) / 2), "%s", choix.liste[i]);
-        ++y;
+        y += 2;
     }
     wrefresh(fenetre_menu);
 }
