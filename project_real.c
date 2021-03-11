@@ -310,8 +310,8 @@ Matrice op_transpose_matrice(Matrice m1)
 {
     Matrice m2;
 
-    m2.nombre_lignes = m1.nombre_lignes;
-    m2.nombre_colonnes = m1.nombre_colonnes;
+    m2.nombre_lignes = m1.nombre_colonnes;
+    m2.nombre_colonnes = m1.nombre_lignes;
     m2.nombre_elements = m1.nombre_elements;
 
     m2.mat = (int **)malloc(m2.nombre_lignes * sizeof(int *));
@@ -321,9 +321,9 @@ Matrice op_transpose_matrice(Matrice m1)
         m2.mat[i] = (int *)malloc(m2.nombre_colonnes * sizeof(int));
     }
 
-    for (int i = 0; i < m2.nombre_lignes; i++)
+    for (int i = 0; i < m1.nombre_lignes; i++)
     {
-        for (int j = 0; j < m2.nombre_colonnes; j++)
+        for (int j = 0; j < m1.nombre_colonnes; j++)
         {
             m2.mat[j][i] = m1.mat[i][j];
         }
@@ -750,7 +750,7 @@ void somme_deux_matrices()
     {
         ns_choix = afficher_menu(s_choix);
 
-        if ((m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements) && (m2.nombre_colonnes * m2.nombre_lignes == m2.nombre_elements))
+        if ((m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements) && (m2.nombre_colonnes * m2.nombre_lignes == m2.nombre_elements) && (m1.nombre_colonnes == m2.nombre_colonnes) && (m1.nombre_lignes == m2.nombre_lignes))
         {
             valide = 1;
         }
@@ -899,7 +899,7 @@ int *max_colonnes(Matrice m)
         {
             if (t[i] < nombre_chifres(m.mat[j][i]))
             {
-                if (m.mat[i][j] < 0)
+                if (m.mat[j][i] < 0)
                 {
                     t[i] = 1 + nombre_chifres(m.mat[j][i]);
                 }
@@ -1159,14 +1159,12 @@ Matrice creation_matrice()
     {
         m.mat[i] = (int *)malloc(n_colonnes * sizeof(int));
     }
-    // to delete
-    int count = 1;
-    for (int i = 0; i < m.nombre_lignes; i++)
+
+    for (int i = 0; i < n_lignes; i++)
     {
-        for (int j = 0; j < m.nombre_colonnes; j++)
+        for (int j = 0; j < n_colonnes; j++)
         {
-            m.mat[i][j] = count;
-            count++;
+            m.mat[i][j] = 0;
         }
     }
 
