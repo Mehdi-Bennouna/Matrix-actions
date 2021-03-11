@@ -77,8 +77,9 @@ void somme_deux_matrices();
 void difference_deux_matrices();
 void multiplication_matrice_nombre();
 void multiplication_deux_matrices();
+void transpose_matrice();
 
-void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
+//void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    AFFICHAGE ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
@@ -86,6 +87,8 @@ void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operati
 Matrice op_somme_deux_matrice(Matrice m1, Matrice M2);
 Matrice op_difference_deux_matrice(Matrice m1, Matrice M2);
 Matrice op_multiplication_deux_matrices(Matrice m1, Matrice m2);
+Matrice op_transpose_matrice(Matrice m1);
+
 //--------------------------------   FONCTIONS    CALCUL ---------------------------------------------------------------------//
 
 int main()
@@ -139,6 +142,10 @@ int main()
                 {
                     multiplication_deux_matrices();
                 }
+                else if (n_liste_choix == 5)
+                {
+                    //inverse de matrice
+                }
             }
             choix.liste = liste_choix_0;
             choix.nombre_choix = 5;
@@ -147,11 +154,22 @@ int main()
 
         if (n_liste_choix == 2)
         {
-            choix.liste = liste_choix_2;
-            choix.nombre_choix = 7;
-            choix.nombre_choix_valide = 7;
+            while (n_liste_choix != 6)
+            {
+                choix.liste = liste_choix_2;
+                choix.nombre_choix = 7;
+                choix.nombre_choix_valide = 7;
 
-            n_liste_choix = afficher_menu(choix);
+                n_liste_choix = afficher_menu(choix);
+
+                if (n_liste_choix == 1)
+                {
+                    transpose_matrice();
+                }
+            }
+            choix.liste = liste_choix_0;
+            choix.nombre_choix = 5;
+            choix.nombre_choix_valide = 5;
         }
 
         if (n_liste_choix == 3)
@@ -281,9 +299,95 @@ Matrice op_multiplication_deux_matrices(Matrice m1, Matrice m2)
 
     return m3;
 }
+
+Matrice op_transpose_matrice(Matrice m1)
+{
+    Matrice m2;
+
+    m2.nombre_lignes = m1.nombre_lignes;
+    m2.nombre_colonnes = m1.nombre_colonnes;
+    m2.nombre_elements = m1.nombre_elements;
+
+    m2.mat = (int **)malloc(m2.nombre_lignes * sizeof(int *));
+
+    for (int i = 0; i < m2.nombre_lignes; i++)
+    {
+        m2.mat[i] = (int *)malloc(m2.nombre_colonnes * sizeof(int));
+    }
+
+    for (int i = 0; i < m2.nombre_lignes; i++)
+    {
+        for (int j = 0; j < m2.nombre_colonnes; j++)
+        {
+            m2.mat[j][i] = m1.mat[i][j];
+        }
+    }
+
+    return m2;
+}
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 //--------------------------------   FONCTIONS    AFFICHAGE ---------------------------------------------------------------------
+void transpose_matrice()
+{
+    int ns_choix = 0;
+
+    char *choix_multiplication_matrice_nombre[] = {" Transpose Matrice ", "Remplir Matrice (vide)", "Calcul", "retour"};
+
+    liste_choix s_choix = {4, 4, choix_multiplication_matrice_nombre};
+
+    Matrice m1, m2;
+
+    int valide = 0;
+
+    while (ns_choix != 3)
+    {
+        ns_choix = afficher_menu(s_choix);
+
+        if (ns_choix == 1)
+        {
+            m1 = creation_matrice();
+            m1 = remplissage_matrice(m1);
+            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
+            {
+                choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
+            }
+        }
+        else if (ns_choix == 2)
+        {
+            if (m1.nombre_elements == m1.nombre_colonnes * m1.nombre_lignes)
+            {
+                valide = 1;
+            }
+
+            if (valide == 1)
+            {
+                m2 = op_transpose_matrice(m1);
+                char *une_liste[] = {"Resultat"};
+                liste_choix s_choix = {1, 1, une_liste};
+                afficher_cadre(s_choix);
+
+                int *tmax;
+                tmax = max_colonnes(m2); //calcul des dimesions de depart de la matrice
+                int HAUTEUR = (2 * m2.nombre_lignes) + 1;
+                int LARGEUR = 0;
+                for (int i = 0; i < m2.nombre_colonnes; i++)
+                {
+                    LARGEUR += tmax[i];
+                }
+                LARGEUR += (2 * m1.nombre_colonnes) + 2; //HAUTEUR LARGEUR SONT SET
+                int x = 50 - (LARGEUR / 2);
+                int y = 12 - (HAUTEUR / 2);
+                affichage_matrice(m2, 1, x, y);
+                wgetch(stdscr);
+            }
+            else
+            {
+                popup_erreur(0);
+            }
+        }
+    }
+}
 
 void multiplication_deux_matrices()
 {
@@ -356,10 +460,6 @@ void multiplication_deux_matrices()
             {
                 popup_erreur(0);
             }
-
-            //que si m1 et m2 sont valides
-            //calcul
-            //affichage de la matrice resultat
         }
     }
 }
