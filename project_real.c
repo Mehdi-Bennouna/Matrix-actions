@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct Vecteurs
+{
+    int nombre_elements;
+    int *vect;
+} Vecteur;
+
 typedef struct Matrices
 {
     int nombre_lignes;
@@ -79,6 +85,10 @@ void multiplication_matrice_nombre();
 void multiplication_deux_matrices();
 void transpose_matrice();
 void tri_matrice();
+void calcul_vecteur_maxligne();
+void calcul_vecteur_maxcolonne();
+void affichage_vecteur(Vecteur t, int posx, int posy);
+int *max_colonnes_vect(Vecteur tab);
 
 //void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
 
@@ -90,6 +100,8 @@ Matrice op_difference_deux_matrice(Matrice m1, Matrice M2);
 Matrice op_multiplication_deux_matrices(Matrice m1, Matrice m2);
 Matrice op_transpose_matrice(Matrice m1);
 Matrice op_tri_matrice(Matrice m1);
+Vecteur op_calcul_vecteur_maxligne(Matrice m);
+Vecteur op_calcul_vecteur_maxcolonne(Matrice m);
 
 //--------------------------------   FONCTIONS    CALCUL ---------------------------------------------------------------------//
 
@@ -171,6 +183,14 @@ int main()
                 else if (n_liste_choix == 2)
                 {
                     tri_matrice();
+                }
+                else if (n_liste_choix == 3)
+                {
+                    calcul_vecteur_maxligne();
+                }
+                else if (n_liste_choix == 4)
+                {
+                    calcul_vecteur_maxcolonne();
                 }
             }
             choix.liste = liste_choix_0;
@@ -359,9 +379,183 @@ Matrice op_tri_matrice(Matrice m1)
 
     return m1;
 }
+
+Vecteur op_calcul_vecteur_maxligne(Matrice m)
+{
+    Vecteur tab;
+    int max;
+
+    tab.nombre_elements = m.nombre_lignes;
+    tab.vect = (int *)malloc(m.nombre_lignes * sizeof(int));
+
+    for (int i = 0; i < m.nombre_lignes; i++)
+    {
+        max = m.mat[i][0];
+        for (int j = 0; j < m.nombre_colonnes; j++)
+        {
+            if (max < m.mat[i][j])
+            {
+                max = m.mat[i][j];
+            }
+        }
+        tab.vect[i] = max;
+    }
+
+    return tab;
+}
+
+Vecteur op_calcul_vecteur_maxcolonne(Matrice m)
+{
+    Vecteur tab;
+    int max;
+
+    tab.nombre_elements = m.nombre_colonnes;
+    tab.vect = (int *)malloc(m.nombre_colonnes * sizeof(int));
+
+    for (int i = 0; i < m.nombre_colonnes; i++)
+    {
+        max = m.mat[0][i];
+        for (int j = 0; j < m.nombre_lignes; j++)
+        {
+            if (max < m.mat[j][i])
+            {
+                max = m.mat[j][i];
+            }
+        }
+        tab.vect[i] = max;
+    }
+
+    return tab;
+}
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 //--------------------------------   FONCTIONS    AFFICHAGE ---------------------------------------------------------------------
+void calcul_vecteur_maxligne()
+{
+    int ns_choix = 0;
+
+    char *choix_multiplication_matrice_nombre[] = {" Vecteur MaxLigne ", "Remplir Matrice (vide)", "Calcul", "retour"};
+
+    liste_choix s_choix = {4, 4, choix_multiplication_matrice_nombre};
+
+    Matrice m1;
+    Vecteur t;
+
+    int valide = 0;
+
+    while (ns_choix != 3)
+    {
+        ns_choix = afficher_menu(s_choix);
+
+        if (ns_choix == 1)
+        {
+            m1 = creation_matrice();
+            m1 = remplissage_matrice(m1);
+            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
+            {
+                choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
+            }
+        }
+        else if (ns_choix == 2)
+        {
+            if (m1.nombre_elements == m1.nombre_colonnes * m1.nombre_lignes)
+            {
+                valide = 1;
+            }
+
+            if (valide == 1)
+            {
+                t = op_calcul_vecteur_maxligne(m1);
+
+                char *une_liste[] = {"Resultat"};
+                liste_choix s_choix = {1, 1, une_liste};
+                afficher_cadre(s_choix);
+
+                int *tmax;
+                tmax = max_colonnes(m1); //calcul des dimesions de depart de la matrice
+                int HAUTEUR = (2 * 0) + 1;
+                int LARGEUR = 0;
+                for (int i = 0; i < m1.nombre_colonnes; i++)
+                {
+                    LARGEUR += tmax[i];
+                }
+                LARGEUR += (2 * t.nombre_elements) + 2; //HAUTEUR LARGEUR SONT SET
+                int x = 50 - (LARGEUR / 2);
+                int y = 11 - (HAUTEUR / 2);
+                affichage_vecteur(t, x, y);
+                wgetch(stdscr);
+            }
+            else
+            {
+                popup_erreur(0);
+            }
+        }
+    }
+}
+
+void calcul_vecteur_maxcolonne()
+{
+    int ns_choix = 0;
+
+    char *choix_multiplication_matrice_nombre[] = {" Vecteur MaxLigne ", "Remplir Matrice (vide)", "Calcul", "retour"};
+
+    liste_choix s_choix = {4, 4, choix_multiplication_matrice_nombre};
+
+    Matrice m1;
+    Vecteur t;
+
+    int valide = 0;
+
+    while (ns_choix != 3)
+    {
+        ns_choix = afficher_menu(s_choix);
+
+        if (ns_choix == 1)
+        {
+            m1 = creation_matrice();
+            m1 = remplissage_matrice(m1);
+            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
+            {
+                choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
+            }
+        }
+        else if (ns_choix == 2)
+        {
+            if (m1.nombre_elements == m1.nombre_colonnes * m1.nombre_lignes)
+            {
+                valide = 1;
+            }
+
+            if (valide == 1)
+            {
+                t = op_calcul_vecteur_maxcolonne(m1);
+
+                char *une_liste[] = {"Resultat"};
+                liste_choix s_choix = {1, 1, une_liste};
+                afficher_cadre(s_choix);
+
+                int *tmax;
+                tmax = max_colonnes(m1); //calcul des dimesions de depart de la matrice
+                int HAUTEUR = (2 * 0) + 1;
+                int LARGEUR = 0;
+                for (int i = 0; i < m1.nombre_colonnes; i++)
+                {
+                    LARGEUR += tmax[i];
+                }
+                LARGEUR += (2 * t.nombre_elements) + 2; //HAUTEUR LARGEUR SONT SET
+                int x = 50 - (LARGEUR / 2);
+                int y = 11 - (HAUTEUR / 2);
+                affichage_vecteur(t, x, y);
+                wgetch(stdscr);
+            }
+            else
+            {
+                popup_erreur(0);
+            }
+        }
+    }
+}
+
 void tri_matrice()
 {
     int ns_choix = 0;
@@ -810,6 +1004,36 @@ void somme_deux_matrices()
     }
 }
 
+void affichage_vecteur(Vecteur t, int posx, int posy)
+{
+    WINDOW *fenetre_vecteur;
+
+    int *tmax;
+
+    tmax = max_colonnes_vect(t);
+    int HAUTEUR = 3;
+    int LARGEUR = 0;
+
+    for (int i = 0; i < t.nombre_elements; i++)
+    {
+        LARGEUR += tmax[i];
+    }
+    LARGEUR += (2 * t.nombre_elements) + 2;
+    fenetre_vecteur = newwin(HAUTEUR, LARGEUR, posy, posx);
+    wborder(fenetre_vecteur, 0, 0, 32, 32, 0, 0, 0, 0);
+
+    posy = 1;
+    posx = 2;
+
+    for (int i = 0; i < t.nombre_elements; i++)
+    {
+        mvwprintw(fenetre_vecteur, posy, posx, "%d", t.vect[i]);
+
+        posx = posx + tmax[i] + 2;
+    }
+    wrefresh(fenetre_vecteur);
+}
+
 void affichage_matrice(Matrice m, int type, int posx, int posy)
 {
     WINDOW *fenetre_matrice;
@@ -880,6 +1104,27 @@ int nombre_chifres(int x)
         }
         return nombre;
     }
+}
+
+int *max_colonnes_vect(Vecteur tab)
+{
+    int *t;
+    int i;
+
+    t = (int *)malloc(tab.nombre_elements * sizeof(int));
+    for (i = 0; i < tab.nombre_elements; i++)
+    {
+        t[i] = 0;
+    }
+
+    for (i = 0; i < tab.nombre_elements; i++)
+    {
+        if (t[i] < nombre_chifres(tab.vect[i]))
+        {
+            t[i] = nombre_chifres(tab.vect[i]);
+        }
+    }
+    return t;
 }
 
 int *max_colonnes(Matrice m)
