@@ -97,7 +97,7 @@ void calcul_vecteur_maxcolonne();
 void affichage_vecteur(Vecteur t, int posx, int posy);
 int *max_colonnes_vect(Vecteur tab);
 char *saisie_texte();
-void affichage_matrice_mot(Matrice_char m, int posx, int posy);
+void affichage_matrice_mot(Matrice_char m);
 
 //void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
 
@@ -230,7 +230,7 @@ int main()
                 }
                 else if (n_liste_choix == 3)
                 {
-                    affichage_matrice_mot(mat, 3, 3);
+                    affichage_matrice_mot(mat);
                 }
             }
             choix.liste = liste_choix_0;
@@ -495,11 +495,11 @@ Matrice_char creation_matrice_mots(char *text)
         mat_mots.nombre_lignes++;
     }
 
-    mat_mots.mat = (char **)malloc(mat_mots.nombre_lignes + 1 * sizeof(char *));
+    mat_mots.mat = (char **)malloc(mat_mots.nombre_lignes * sizeof(char *));
 
     for (i = 0; i < mat_mots.nombre_lignes; i++)
     {
-        mat_mots.mat[i] = (char *)malloc(mat_mots.nombre_colonnes + 1 * sizeof(char));
+        mat_mots.mat[i] = (char *)malloc(mat_mots.nombre_colonnes * sizeof(char));
     }
 
     cpt = 0;
@@ -532,29 +532,63 @@ Matrice_char creation_matrice_mots(char *text)
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 //--------------------------------   FONCTIONS    AFFICHAGE ---------------------------------------------------------------------
-void affichage_matrice_mot(Matrice_char m, int posx, int posy)
+void affichage_matrice_mot(Matrice_char m)
 {
+
+    char *une_liste[] = {"Saisie du texte"};
+    liste_choix s_choix = {1, 1, une_liste};
+    afficher_cadre(s_choix);
+
     WINDOW *fenetre_matrice;
 
-    int HAUTEUR = (2 * m.nombre_lignes) + 1;
-    int LARGEUR = 0;
-
-    LARGEUR += (m.nombre_colonnes) + 4; //HAUTEUR LARGEUR SONT SET
-
-    fenetre_matrice = newwin(HAUTEUR, LARGEUR, posy, posx);
-    wborder(fenetre_matrice, 0, 0, 32, 32, 0, 0, 0, 0);
-
-    posy = -1;
-    posx = 0;
-
-    for (int i = 0; i < m.nombre_lignes; i++)
+    if (m.nombre_lignes < 10)
     {
-        posy += 2;
-        posx = 2;
-        for (int j = 0; j < m.nombre_colonnes && m.mat[i][j] != '\0'; j++)
+        int HAUTEUR = (2 * m.nombre_lignes) + 1;
+        int LARGEUR = (m.nombre_colonnes) + 4; //HAUTEUR LARGEUR SONT SET
+
+        int posx = 50 - (LARGEUR / 2);
+        int posy = 12 - (HAUTEUR / 2);
+
+        fenetre_matrice = newwin(HAUTEUR, LARGEUR, posy, posx);
+        wborder(fenetre_matrice, 0, 0, 32, 32, 0, 0, 0, 0);
+
+        posy = -1;
+        posx = 0;
+
+        for (int i = 0; i < m.nombre_lignes; i++)
         {
-            mvwprintw(fenetre_matrice, posy, posx, "%c", m.mat[i][j]);
-            posx++;
+            posy += 2;
+            posx = 2;
+            for (int j = 0; j < m.nombre_colonnes && m.mat[i][j] != '\0'; j++)
+            {
+                mvwprintw(fenetre_matrice, posy, posx, "%c", m.mat[i][j]);
+                posx++;
+            }
+        }
+    }
+    else
+    {
+        int HAUTEUR = (m.nombre_lignes) + 2;
+        int LARGEUR = (m.nombre_colonnes) + 4; //HAUTEUR LARGEUR SONT SET
+
+        int posx = 50 - (LARGEUR / 2);
+        int posy = 12 - (HAUTEUR / 2);
+
+        fenetre_matrice = newwin(HAUTEUR, LARGEUR, posy, posx);
+        wborder(fenetre_matrice, 0, 0, 32, 32, 0, 0, 0, 0);
+
+        posy = 0;
+        posx = 0;
+
+        for (int i = 0; i < m.nombre_lignes; i++)
+        {
+            posy += 1;
+            posx = 2;
+            for (int j = 0; j < m.nombre_colonnes && m.mat[i][j] != '\0'; j++)
+            {
+                mvwprintw(fenetre_matrice, posy, posx, "%c", m.mat[i][j]);
+                posx++;
+            }
         }
     }
 
