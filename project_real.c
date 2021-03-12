@@ -18,6 +18,13 @@ typedef struct Matrices
     int **mat;
 } Matrice;
 
+typedef struct Matrices_char
+{
+    int nombre_lignes;
+    int nombre_colonnes;
+    char **mat;
+} Matrice_char;
+
 typedef struct l_choix
 {
     int nombre_choix_valide;
@@ -90,6 +97,7 @@ void calcul_vecteur_maxcolonne();
 void affichage_vecteur(Vecteur t, int posx, int posy);
 int *max_colonnes_vect(Vecteur tab);
 char *saisie_texte();
+void affichage_matrice_mot(Matrice_char m, int posx, int posy);
 
 //void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
 
@@ -103,6 +111,7 @@ Matrice op_transpose_matrice(Matrice m1);
 Matrice op_tri_matrice(Matrice m1);
 Vecteur op_calcul_vecteur_maxligne(Matrice m);
 Vecteur op_calcul_vecteur_maxcolonne(Matrice m);
+Matrice_char creation_matrice_mots(char *texte);
 
 //--------------------------------   FONCTIONS    CALCUL ---------------------------------------------------------------------//
 
@@ -202,6 +211,7 @@ int main()
         if (n_liste_choix == 3)
         {
             char texte[500];
+            Matrice_char mat;
             while (n_liste_choix != 8)
             {
                 choix.liste = liste_choix_3;
@@ -213,6 +223,14 @@ int main()
                 if (n_liste_choix == 1)
                 {
                     saisie_texte(texte);
+                }
+                else if (n_liste_choix == 2 && texte[0] != '\0')
+                {
+                    mat = creation_matrice_mots(texte);
+                }
+                else if (n_liste_choix == 3)
+                {
+                    affichage_matrice_mot(mat, 3, 3);
                 }
             }
             choix.liste = liste_choix_0;
@@ -437,9 +455,113 @@ Vecteur op_calcul_vecteur_maxcolonne(Matrice m)
 
     return tab;
 }
+
+Matrice_char creation_matrice_mots(char *text)
+{
+    Matrice_char mat_mots;
+
+    mat_mots.nombre_lignes = 0;
+    mat_mots.nombre_colonnes = 0;
+
+    int cpt = 0;
+    int i = 0;
+    int j = 0;
+    int ps = 1;
+
+    while (text[cpt] != 0)
+    {
+        if (text[cpt] == 32)
+        {
+            if (ps == 0)
+            {
+                ps = 1;
+                mat_mots.nombre_lignes++;
+                i = 0;
+            }
+        }
+        else
+        {
+            i++;
+            if (i > mat_mots.nombre_colonnes)
+            {
+                mat_mots.nombre_colonnes = i;
+            }
+            ps = 0;
+        }
+        cpt++;
+    }
+    if (text[cpt - 1] != 32)
+    {
+        mat_mots.nombre_lignes++;
+    }
+
+    mat_mots.mat = (char **)malloc(mat_mots.nombre_lignes + 1 * sizeof(char *));
+
+    for (i = 0; i < mat_mots.nombre_lignes; i++)
+    {
+        mat_mots.mat[i] = (char *)malloc(mat_mots.nombre_colonnes + 1 * sizeof(char));
+    }
+
+    cpt = 0;
+    i = 0;
+    j = 0;
+    ps = 1;
+
+    while (text[cpt] != 0)
+    {
+        if (text[cpt] == 32)
+        {
+            if (ps == 0)
+            {
+                ps = 1;
+                j++;
+                i = 0;
+            }
+        }
+        else
+        {
+            mat_mots.mat[j][i] = text[cpt];
+            mat_mots.mat[j][i + 1] = '\0';
+            i++;
+            ps = 0;
+        }
+        cpt++;
+    }
+    return mat_mots;
+}
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 //--------------------------------   FONCTIONS    AFFICHAGE ---------------------------------------------------------------------
+void affichage_matrice_mot(Matrice_char m, int posx, int posy)
+{
+    WINDOW *fenetre_matrice;
+
+    int HAUTEUR = (2 * m.nombre_lignes) + 1;
+    int LARGEUR = 0;
+
+    LARGEUR += (m.nombre_colonnes) + 4; //HAUTEUR LARGEUR SONT SET
+
+    fenetre_matrice = newwin(HAUTEUR, LARGEUR, posy, posx);
+    wborder(fenetre_matrice, 0, 0, 32, 32, 0, 0, 0, 0);
+
+    posy = -1;
+    posx = 0;
+
+    for (int i = 0; i < m.nombre_lignes; i++)
+    {
+        posy += 2;
+        posx = 2;
+        for (int j = 0; j < m.nombre_colonnes && m.mat[i][j] != '\0'; j++)
+        {
+            mvwprintw(fenetre_matrice, posy, posx, "%c", m.mat[i][j]);
+            posx++;
+        }
+    }
+
+    wrefresh(fenetre_matrice);
+    wgetch(fenetre_matrice);
+}
+
 char *saisie_texte(char *texte)
 {
     char c = ' ';
