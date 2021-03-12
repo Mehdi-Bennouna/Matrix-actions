@@ -89,6 +89,7 @@ void calcul_vecteur_maxligne();
 void calcul_vecteur_maxcolonne();
 void affichage_vecteur(Vecteur t, int posx, int posy);
 int *max_colonnes_vect(Vecteur tab);
+char *saisie_texte();
 
 //void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
 
@@ -200,18 +201,27 @@ int main()
 
         if (n_liste_choix == 3)
         {
-            choix.liste = liste_choix_3;
-            choix.nombre_choix = 9;
-            choix.nombre_choix_valide = 9;
+            char texte[500];
+            while (n_liste_choix != 8)
+            {
+                choix.liste = liste_choix_3;
+                choix.nombre_choix = 9;
+                choix.nombre_choix_valide = 9;
 
-            n_liste_choix = afficher_menu(choix);
+                n_liste_choix = afficher_menu(choix);
+
+                if (n_liste_choix == 1)
+                {
+                    saisie_texte(texte);
+                }
+            }
+            choix.liste = liste_choix_0;
+            choix.nombre_choix = 5;
+            choix.nombre_choix_valide = 5;
         }
-        n_liste_choix = 0;
     }
-
-    wgetch(stdscr);
-
     endwin();
+    return 0;
 }
 
 //--------------------------------   FONCTIONS    CALCUL ---------------------------------------------------------------------
@@ -430,6 +440,62 @@ Vecteur op_calcul_vecteur_maxcolonne(Matrice m)
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 //--------------------------------   FONCTIONS    AFFICHAGE ---------------------------------------------------------------------
+char *saisie_texte(char *texte)
+{
+    char c = ' ';
+    int cpt = 0;
+    int posy = 2;
+    int posx = 2;
+
+    char *une_liste[] = {"Saisie du texte"};
+    liste_choix s_choix = {1, 1, une_liste};
+    afficher_cadre(s_choix);
+
+    WINDOW *fenetre_texte;
+    fenetre_texte = newwin(23, 99, posy, posx);
+    curs_set(1);
+
+    posx = 1;
+    posy = 0;
+
+    while (c != 10 && cpt < 500)
+    {
+        c = wgetch(fenetre_texte);
+        if ((c > 64 && c < 91) || (c > 96 && c < 123) || c == 32)
+        {
+            texte[cpt] = c;
+            texte[cpt + 1] = '\0';
+            cpt++;
+            mvwprintw(fenetre_texte, posy, posx, "%c", c);
+            posx++;
+            wrefresh(fenetre_texte);
+            if (posx == 99)
+            {
+                posx = 1;
+                posy++;
+            }
+        }
+        else if (c == 8 && cpt != 0)
+        {
+            cpt--;
+            texte[cpt] = '\0';
+            if (posx == 0)
+            {
+                posx = 99;
+                posy--;
+            }
+            else
+            {
+                posx--;
+            }
+            mvwdelch(fenetre_texte, posy, posx);
+            wrefresh(fenetre_texte);
+        }
+    }
+    curs_set(0);
+    return texte;
+}
+
 void calcul_vecteur_maxligne()
 {
     int ns_choix = 0;
