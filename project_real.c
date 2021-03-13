@@ -110,6 +110,8 @@ void affichage_vecteur(Vecteur t, int posx, int posy);
 int *max_colonnes_vect(Vecteur tab);
 char *saisie_texte();
 void affichage_matrice_mot(Matrice_char m);
+void affichage_struct_vect(struct Element_vect_mots *tab);
+void suprime_liste(struct Element_vect_mots *tab);
 
 //void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
 
@@ -126,6 +128,8 @@ Vecteur op_calcul_vecteur_maxcolonne(Matrice m);
 Matrice_char creation_matrice_mots(char *texte);
 void ajouter_liste(struct Element_liste **tete, char *info);
 struct Element_vect_mots *creation_struct_vect(Matrice_char m);
+void ajout_mot(struct Element_vect_mots *tab);
+void op_suprimer_liste(struct Element_liste **tete, char *info);
 
 //--------------------------------   FONCTIONS    CALCUL ---------------------------------------------------------------------//
 
@@ -135,7 +139,7 @@ int main()
     wHnd = GetStdHandle(STD_OUTPUT_HANDLE);
     rHnd = GetStdHandle(STD_INPUT_HANDLE);
     SetConsoleTitle("Projet Algo");
-    SMALL_RECT windowSize = {0, 0, 101, 25};
+    SMALL_RECT windowSize = {0, 0, 101, 28};
     SetConsoleWindowInfo(wHnd, 1, &windowSize);
     COORD bufferSize = {10, 10};
     SetConsoleScreenBufferSize(wHnd, bufferSize);
@@ -226,6 +230,7 @@ int main()
         {
             char texte[500];
             Matrice_char mat;
+            struct Element_vect_mots *tab;
             while (n_liste_choix != 8)
             {
                 choix.liste = liste_choix_3;
@@ -248,7 +253,19 @@ int main()
                 }
                 else if (n_liste_choix == 4)
                 {
-                    creation_struct_vect(mat);
+                    tab = creation_struct_vect(mat);
+                }
+                else if (n_liste_choix == 5)
+                {
+                    affichage_struct_vect(tab);
+                }
+                else if (n_liste_choix == 6)
+                {
+                    ajout_mot(tab);
+                }
+                else if (n_liste_choix == 7)
+                {
+                    suprime_liste(tab);
                 }
             }
             choix.liste = liste_choix_0;
@@ -569,7 +586,7 @@ void ajouter_liste(struct Element_liste **tete, char *info)
         q = q->svt;
     }
     q->svt = p;
-    ;
+
     return;
 }
 
@@ -578,7 +595,7 @@ struct Element_vect_mots *creation_struct_vect(Matrice_char m)
     struct Element_vect_mots *tab;
 
     tab = (struct Element_vect_mots *)malloc(26 * sizeof(struct Element_vect_mots));
-    char mot[20];
+    char *mot;
     int j;
     for (int i = 0; i < 26; i++)
     {
@@ -587,6 +604,8 @@ struct Element_vect_mots *creation_struct_vect(Matrice_char m)
     }
     for (int i = 0; i < m.nombre_lignes; i++)
     {
+        mot = (char *)malloc(20 * sizeof(char));
+
         j = 0;
         while (m.mat[i][j] != '\0')
         {
@@ -597,22 +616,224 @@ struct Element_vect_mots *creation_struct_vect(Matrice_char m)
 
         if (mot[0] > 64 && mot[0] < 91)
         {
-            ajouter_liste(&tab[(mot[0] - 65)].tete, mot);
+            ajouter_liste(&(tab[(mot[0] - 65)].tete), mot);
         }
         else
         {
-            ajouter_liste(&tab[mot[0] - 97].tete, mot);
+            ajouter_liste(&(tab[(mot[0] - 97)].tete), mot);
         }
     }
     return tab;
 }
+
+void op_suprimer_liste(struct Element_liste **tete, char *info)
+{
+    struct Element_liste *p = *tete, *q;
+
+    if (p != NULL && strncmp(p->info, info, 20) == 0)
+    {
+        *tete = p->svt;
+        free(p);
+        return;
+    }
+
+    while (p != NULL && strncmp(p->info, info, 20) != 0)
+    {
+        q = p;
+        p = p->svt;
+    }
+
+    if (p == NULL)
+    {
+        return;
+    }
+
+    q->svt = p->svt;
+    free(p);
+}
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 //--------------------------------   FONCTIONS    AFFICHAGE ---------------------------------------------------------------------
+void suprime_liste(struct Element_vect_mots *tab)
+{
+    char *une_liste[] = {"Ajout de mot"};
+    liste_choix s_choix = {1, 1, une_liste};
+    afficher_cadre(s_choix);
+
+    char c = '\0';
+    int cpt = 0;
+
+    WINDOW *fenetre_texte;
+    fenetre_texte = newwin(23, 99, 2, 2);
+    curs_set(1);
+
+    int posy = 7;
+    int posx = 43;
+
+    mvwprintw(fenetre_texte, 7, 17, "donner le mot a supprimer:");
+
+    char *texte;
+    texte = (char *)malloc(sizeof(char) * 20);
+
+    while (c != 10 && cpt < 20)
+    {
+        c = wgetch(fenetre_texte);
+        if ((c > 64 && c < 91) || (c > 96 && c < 123))
+        {
+            texte[cpt] = c;
+            texte[cpt + 1] = '\0';
+            cpt++;
+            mvwprintw(fenetre_texte, posy, posx, "%c", c);
+            posx++;
+            wrefresh(fenetre_texte);
+        }
+        else if (c == 8 && cpt != 0)
+        {
+            cpt--;
+            texte[cpt] = '\0';
+            posx--;
+
+            mvwdelch(fenetre_texte, posy, posx);
+            wrefresh(fenetre_texte);
+        }
+    }
+    curs_set(0);
+
+    if (texte[0] > 64 && texte[0] < 91)
+    {
+        op_suprimer_liste(&tab[texte[0] - 65].tete, texte);
+    }
+    else if (texte[0] > 96 && texte[0] < 123)
+    {
+        op_suprimer_liste(&tab[texte[0] - 97].tete, texte);
+    }
+}
+
+void ajout_mot(struct Element_vect_mots *tab)
+{
+
+    char *une_liste[] = {"Ajout de mot"};
+    liste_choix s_choix = {1, 1, une_liste};
+    afficher_cadre(s_choix);
+
+    char c = '\0';
+    int cpt = 0;
+
+    WINDOW *fenetre_texte;
+    fenetre_texte = newwin(23, 99, 2, 2);
+    curs_set(1);
+
+    int posy = 7;
+    int posx = 34;
+
+    mvwprintw(fenetre_texte, 7, 17, "donner votre mot:");
+
+    char *texte;
+    texte = (char *)malloc(sizeof(char) * 20);
+
+    while (c != 10 && cpt < 20)
+    {
+        c = wgetch(fenetre_texte);
+        if ((c > 64 && c < 91) || (c > 96 && c < 123))
+        {
+            texte[cpt] = c;
+            texte[cpt + 1] = '\0';
+            cpt++;
+            mvwprintw(fenetre_texte, posy, posx, "%c", c);
+            posx++;
+            wrefresh(fenetre_texte);
+        }
+        else if (c == 8 && cpt != 0)
+        {
+            cpt--;
+            texte[cpt] = '\0';
+            posx--;
+
+            mvwdelch(fenetre_texte, posy, posx);
+            wrefresh(fenetre_texte);
+        }
+    }
+    curs_set(0);
+
+    if (texte[0] > 64 && texte[0] < 91)
+    {
+        ajouter_liste(&tab[texte[0] - 65].tete, texte);
+    }
+    else if (texte[0] > 96 && texte[0] < 123)
+    {
+        ajouter_liste(&tab[texte[0] - 97].tete, texte);
+    }
+}
+
+void affichage_struct_vect(struct Element_vect_mots *tab)
+{
+    char *une_liste[] = {"Affichage de la structure"};
+    liste_choix s_choix = {1, 1, une_liste};
+    afficher_cadre(s_choix);
+
+    char motsis[300];
+    int posx = 1;
+    int posy = 1;
+    WINDOW *fenetre_tableau;
+    fenetre_tableau = newwin(27, 98, 1, 2);
+    int y = 1;
+
+    struct Element_liste *p;
+    for (char i = 0; i < 13; i++)
+    {
+        mvwprintw(fenetre_tableau, y, 1, "%c : ", i + 65);
+        wrefresh(fenetre_tableau);
+
+        if (tab[i].tete == NULL)
+        {
+            wprintw(fenetre_tableau, "vide");
+            wrefresh(fenetre_tableau);
+        }
+        else
+        {
+            p = tab[i].tete;
+            while (p != NULL)
+            {
+                wprintw(fenetre_tableau, " -> %s", p->info);
+                wrefresh(fenetre_tableau);
+                p = p->svt;
+            }
+        }
+
+        y += 2;
+    }
+    wgetch(fenetre_tableau);
+    werase(fenetre_tableau);
+    y = 1;
+    for (char i = 13; i < 26; i++)
+    {
+        mvwprintw(fenetre_tableau, y, 1, "%c : ", i + 65);
+
+        if (tab[i].tete == NULL)
+        {
+            wprintw(fenetre_tableau, "vide");
+        }
+        else
+        {
+            p = tab[i].tete;
+            while (p != NULL)
+            {
+                wprintw(fenetre_tableau, " -> %s", p->info);
+                p = p->svt;
+            }
+        }
+
+        y += 2;
+    }
+
+    wrefresh(fenetre_tableau);
+    wgetch(fenetre_tableau);
+}
+
 void affichage_matrice_mot(Matrice_char m)
 {
 
-    char *une_liste[] = {"Saisie du texte"};
+    char *une_liste[] = {"affichage Matrice de mots"};
     liste_choix s_choix = {1, 1, une_liste};
     afficher_cadre(s_choix);
 
@@ -1729,7 +1950,7 @@ int afficher_menu(liste_choix choix)
     int HAUTEUR = 20;
 
     int debutx = 25;
-    int debuty = 6;
+    int debuty = 7;
 
     WINDOW *fenetre_menu;
     int selection = 2;
