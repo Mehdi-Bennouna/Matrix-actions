@@ -150,6 +150,7 @@ int main()
     noecho();
     cbreak();
     curs_set(0);
+    start_color(); /* Start color 			*/
 
     liste_choix choix = {5, 5, liste_choix_0}; //initialisation au menu principal
     int n_liste_choix = 0;
@@ -231,39 +232,42 @@ int main()
             char texte[500];
             Matrice_char mat;
             struct Element_vect_mots *tab;
+            choix.nombre_choix_valide = 1;
             while (n_liste_choix != 8)
             {
                 choix.liste = liste_choix_3;
                 choix.nombre_choix = 9;
-                choix.nombre_choix_valide = 9;
 
                 n_liste_choix = afficher_menu(choix);
 
                 if (n_liste_choix == 1)
                 {
                     saisie_texte(texte);
+                    choix.nombre_choix_valide = 2;
                 }
-                else if (n_liste_choix == 2 && texte[0] != '\0')
+                else if (n_liste_choix == 2 && choix.nombre_choix_valide >= 2)
                 {
                     mat = creation_matrice_mots(texte);
+                    choix.nombre_choix_valide += 2;
                 }
-                else if (n_liste_choix == 3)
+                else if (n_liste_choix == 3 && choix.nombre_choix_valide >= 3)
                 {
                     affichage_matrice_mot(mat);
                 }
-                else if (n_liste_choix == 4)
+                else if (n_liste_choix == 4 && choix.nombre_choix_valide >= 4)
                 {
                     tab = creation_struct_vect(mat);
+                    choix.nombre_choix_valide += 3;
                 }
-                else if (n_liste_choix == 5)
+                else if (n_liste_choix == 5 && choix.nombre_choix_valide >= 5)
                 {
                     affichage_struct_vect(tab);
                 }
-                else if (n_liste_choix == 6)
+                else if (n_liste_choix == 6 && choix.nombre_choix_valide >= 6)
                 {
                     ajout_mot(tab);
                 }
-                else if (n_liste_choix == 7)
+                else if (n_liste_choix == 7 && choix.nombre_choix_valide >= 7)
                 {
                     suprime_liste(tab);
                 }
@@ -2000,9 +2004,15 @@ void print_menu(WINDOW *fenetre_menu, int selection, liste_choix choix)
 {
     int x, y, i;
 
+    init_pair(1, COLOR_RED, COLOR_BLACK);
     y = 4;
     for (i = 1; i < choix.nombre_choix; ++i)
     {
+        if (i > choix.nombre_choix_valide && i != choix.nombre_choix - 1)
+        {
+
+            wattron(fenetre_menu, COLOR_PAIR(1));
+        }
         if (selection == i + 1) /* Highlight the present choice */
         {
             wattron(fenetre_menu, A_REVERSE);
@@ -2010,8 +2020,11 @@ void print_menu(WINDOW *fenetre_menu, int selection, liste_choix choix)
             wattroff(fenetre_menu, A_REVERSE);
         }
         else
+        {
             mvwprintw(fenetre_menu, y, (25 - strlen(choix.liste[i]) / 2), "%s", choix.liste[i]);
+        }
         y += 2;
+        wattroff(fenetre_menu, COLOR_PAIR(1));
     }
     wrefresh(fenetre_menu);
 }
