@@ -4,6 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct Element_liste
+{
+    char *info;
+    struct Element_liste *svt;
+};
+
+struct Element_vect_mots
+{
+    char lettre;
+    struct Element_liste *tete;
+};
+
 typedef struct Vecteurs
 {
     int nombre_elements;
@@ -112,6 +124,8 @@ Matrice op_tri_matrice(Matrice m1);
 Vecteur op_calcul_vecteur_maxligne(Matrice m);
 Vecteur op_calcul_vecteur_maxcolonne(Matrice m);
 Matrice_char creation_matrice_mots(char *texte);
+void ajouter_liste(struct Element_liste **tete, char *info);
+struct Element_vect_mots *creation_struct_vect(Matrice_char m);
 
 //--------------------------------   FONCTIONS    CALCUL ---------------------------------------------------------------------//
 
@@ -231,6 +245,10 @@ int main()
                 else if (n_liste_choix == 3)
                 {
                     affichage_matrice_mot(mat);
+                }
+                else if (n_liste_choix == 4)
+                {
+                    creation_struct_vect(mat);
                 }
             }
             choix.liste = liste_choix_0;
@@ -528,6 +546,65 @@ Matrice_char creation_matrice_mots(char *text)
         cpt++;
     }
     return mat_mots;
+}
+
+void ajouter_liste(struct Element_liste **tete, char *info)
+{
+    struct Element_liste *p;
+    struct Element_liste *q;
+    p = (struct Element_liste *)malloc(sizeof(struct Element_liste));
+
+    p->info = info;
+    p->svt = NULL;
+
+    if (*tete == NULL)
+    {
+        (*tete) = p;
+        return;
+    }
+
+    q = *tete;
+    while (q->svt != NULL)
+    {
+        q = q->svt;
+    }
+    q->svt = p;
+    ;
+    return;
+}
+
+struct Element_vect_mots *creation_struct_vect(Matrice_char m)
+{
+    struct Element_vect_mots *tab;
+
+    tab = (struct Element_vect_mots *)malloc(26 * sizeof(struct Element_vect_mots));
+    char mot[20];
+    int j;
+    for (int i = 0; i < 26; i++)
+    {
+        tab[i].lettre = 65 + i;
+        tab[i].tete = NULL;
+    }
+    for (int i = 0; i < m.nombre_lignes; i++)
+    {
+        j = 0;
+        while (m.mat[i][j] != '\0')
+        {
+            mot[j] = m.mat[i][j];
+            j++;
+        }
+        mot[j] = '\0';
+
+        if (mot[0] > 64 && mot[0] < 91)
+        {
+            ajouter_liste(&tab[(mot[0] - 65)].tete, mot);
+        }
+        else
+        {
+            ajouter_liste(&tab[mot[0] - 97].tete, mot);
+        }
+    }
+    return tab;
 }
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
