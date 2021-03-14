@@ -112,6 +112,9 @@ char *saisie_texte();
 void affichage_matrice_mot(Matrice_char m);
 void affichage_struct_vect(struct Element_vect_mots *tab);
 void suprime_liste(struct Element_vect_mots *tab);
+void op_afficher_sous_matrices(Matrice m, Matrice temp_mat);
+
+void afficher_sous_matrices();
 
 //void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
 
@@ -220,6 +223,10 @@ int main()
                 else if (n_liste_choix == 4)
                 {
                     calcul_vecteur_maxcolonne();
+                }
+                else if (n_liste_choix == 5)
+                {
+                    afficher_sous_matrices();
                 }
             }
             choix.liste = liste_choix_0;
@@ -655,9 +662,122 @@ void op_suprimer_liste(struct Element_liste **tete, char *info)
     q->svt = p->svt;
     free(p);
 }
+
+void op_afficher_sous_matrices(Matrice m, Matrice temp_mat)
+{
+    char *une_liste[] = {"afficher sous matrices"};
+    liste_choix s_choix = {1, 1, une_liste};
+    afficher_cadre(s_choix);
+
+    int i, j;
+
+    int y = temp_mat.nombre_colonnes;
+    int x = temp_mat.nombre_lignes;
+    temp_mat.nombre_elements = x * y;
+
+    temp_mat.mat = (int **)malloc(x * sizeof(int *));
+
+    for (i = 0; i < x; i++)
+    {
+        temp_mat.mat[i] = (int *)malloc(y * sizeof(int));
+    }
+
+    i = 0;
+    j = 0;
+
+    int HAUTEUR;
+    int LARGEUR;
+    int posx, posy;
+    int *tmax;
+
+    while (i <= m.nombre_lignes - x)
+    {
+        j = 0;
+        while (j <= m.nombre_colonnes - y)
+        {
+            for (int a = 0; a < x; a++)
+            {
+                for (int b = 0; b < y; b++)
+                {
+                    temp_mat.mat[a][b] = m.mat[a + i][b + j];
+                }
+            }
+            tmax = max_colonnes(temp_mat);
+            HAUTEUR = (2 * temp_mat.nombre_lignes) + 1;
+            LARGEUR = 0;
+            for (int k = 0; k < temp_mat.nombre_colonnes; k++)
+            {
+                LARGEUR += tmax[k];
+            }
+            LARGEUR += (2 * temp_mat.nombre_colonnes) + 2;
+            posx = 50 - (LARGEUR / 2);
+            posy = 12 - (HAUTEUR / 2);
+            affichage_matrice(temp_mat, 1, posx, posy);
+            wgetch(stdscr);
+
+            j++;
+        }
+        i++;
+    }
+}
+
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 //--------------------------------   FONCTIONS    AFFICHAGE ---------------------------------------------------------------------
+void afficher_sous_matrices()
+{
+    int ns_choix;
+
+    char *choix_somme_deux_matrices[] = {" Extraction sous matrices ", "Remplir Matrice 1 (vide)", "Donner la taille des sous matrices", "Calcul", "retour"};
+
+    liste_choix s_choix = {2, 5, choix_somme_deux_matrices};
+
+    Matrice m1, m2;
+    int valide = 0;
+    m2.nombre_colonnes = 0;
+    m2.nombre_lignes = 0;
+
+    while (ns_choix != 4)
+    {
+        if ((m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements) && (m2.nombre_colonnes != 0 && m2.nombre_lignes != 0))
+        {
+            if (m2.nombre_lignes <= m1.nombre_lignes && m2.nombre_colonnes <= m1.nombre_colonnes)
+            {
+                valide = 1;
+                s_choix.nombre_choix_valide = 5;
+            }
+        }
+        ns_choix = afficher_menu(s_choix);
+
+        if (ns_choix == 1)
+        {
+            m1 = creation_matrice();
+            m1 = remplissage_matrice(m1);
+            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
+            {
+                choix_somme_deux_matrices[1] = "Remplir Matrice 1 (remplie)";
+            }
+        }
+
+        if (ns_choix == 2)
+        {
+            m2 = creation_matrice();
+        }
+
+        if (ns_choix == 3)
+        {
+            if (valide == 1)
+            {
+                op_afficher_sous_matrices(m1, m2);
+            }
+            else
+            {
+                popup_erreur(0);
+            }
+        }
+    }
+}
+
 void suprime_liste(struct Element_vect_mots *tab)
 {
     char *une_liste[] = {"Ajout de mot"};
@@ -954,13 +1074,13 @@ char *saisie_texte(char *texte)
     return texte;
 }
 
-void calcul_vecteur_maxligne()
+void calcul_vecteur_maxcolonne()
 {
     int ns_choix = 0;
 
     char *choix_multiplication_matrice_nombre[] = {" Vecteur MaxLigne ", "Remplir Matrice (vide)", "Calcul", "retour"};
 
-    liste_choix s_choix = {4, 4, choix_multiplication_matrice_nombre};
+    liste_choix s_choix = {1, 4, choix_multiplication_matrice_nombre};
 
     Matrice m1;
     Vecteur t;
@@ -969,24 +1089,22 @@ void calcul_vecteur_maxligne()
 
     while (ns_choix != 3)
     {
+        if (valide == 1)
+        {
+            s_choix.nombre_choix_valide = 4;
+        }
         ns_choix = afficher_menu(s_choix);
 
         if (ns_choix == 1)
         {
             m1 = creation_matrice();
             m1 = remplissage_matrice(m1);
-            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
-            {
-                choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
-            }
+
+            choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
+            valide = 1;
         }
         else if (ns_choix == 2)
         {
-            if (m1.nombre_elements == m1.nombre_colonnes * m1.nombre_lignes)
-            {
-                valide = 1;
-            }
-
             if (valide == 1)
             {
                 t = op_calcul_vecteur_maxligne(m1);
@@ -1017,13 +1135,13 @@ void calcul_vecteur_maxligne()
     }
 }
 
-void calcul_vecteur_maxcolonne()
+void calcul_vecteur_maxligne()
 {
     int ns_choix = 0;
 
     char *choix_multiplication_matrice_nombre[] = {" Vecteur MaxLigne ", "Remplir Matrice (vide)", "Calcul", "retour"};
 
-    liste_choix s_choix = {4, 4, choix_multiplication_matrice_nombre};
+    liste_choix s_choix = {1, 4, choix_multiplication_matrice_nombre};
 
     Matrice m1;
     Vecteur t;
@@ -1032,24 +1150,22 @@ void calcul_vecteur_maxcolonne()
 
     while (ns_choix != 3)
     {
+        if (valide == 1)
+        {
+            s_choix.nombre_choix_valide = 4;
+        }
         ns_choix = afficher_menu(s_choix);
 
         if (ns_choix == 1)
         {
             m1 = creation_matrice();
             m1 = remplissage_matrice(m1);
-            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
-            {
-                choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
-            }
+
+            choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
+            valide = 1;
         }
         else if (ns_choix == 2)
         {
-            if (m1.nombre_elements == m1.nombre_colonnes * m1.nombre_lignes)
-            {
-                valide = 1;
-            }
-
             if (valide == 1)
             {
                 t = op_calcul_vecteur_maxcolonne(m1);
@@ -1086,7 +1202,7 @@ void tri_matrice()
 
     char *choix_multiplication_matrice_nombre[] = {" Tri Matrice ", "Remplir Matrice (vide)", "Calcul", "retour"};
 
-    liste_choix s_choix = {4, 4, choix_multiplication_matrice_nombre};
+    liste_choix s_choix = {1, 4, choix_multiplication_matrice_nombre};
 
     Matrice m1;
 
@@ -1094,23 +1210,22 @@ void tri_matrice()
 
     while (ns_choix != 3)
     {
+        if (valide == 1)
+        {
+            s_choix.nombre_choix_valide = 4;
+        }
         ns_choix = afficher_menu(s_choix);
 
         if (ns_choix == 1)
         {
             m1 = creation_matrice();
             m1 = remplissage_matrice(m1);
-            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
-            {
-                choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
-            }
+
+            choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
+            valide = 1;
         }
         else if (ns_choix == 2)
         {
-            if (m1.nombre_elements == m1.nombre_colonnes * m1.nombre_lignes)
-            {
-                valide = 1;
-            }
 
             if (valide == 1)
             {
@@ -1147,7 +1262,7 @@ void transpose_matrice()
 
     char *choix_multiplication_matrice_nombre[] = {" Transpose Matrice ", "Remplir Matrice (vide)", "Calcul", "retour"};
 
-    liste_choix s_choix = {4, 4, choix_multiplication_matrice_nombre};
+    liste_choix s_choix = {1, 4, choix_multiplication_matrice_nombre};
 
     Matrice m1, m2;
 
@@ -1155,6 +1270,10 @@ void transpose_matrice()
 
     while (ns_choix != 3)
     {
+        if (valide == 1)
+        {
+            s_choix.nombre_choix_valide = 4;
+        }
         ns_choix = afficher_menu(s_choix);
 
         if (ns_choix == 1)
@@ -1164,15 +1283,11 @@ void transpose_matrice()
             if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
             {
                 choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
+                valide = 1;
             }
         }
         else if (ns_choix == 2)
         {
-            if (m1.nombre_elements == m1.nombre_colonnes * m1.nombre_lignes)
-            {
-                valide = 1;
-            }
-
             if (valide == 1)
             {
                 m2 = op_transpose_matrice(m1);
@@ -1208,7 +1323,7 @@ void multiplication_deux_matrices()
 
     char *choix_somme_deux_matrices[] = {" Multiplication de deux matrices ", "Remplir Matrice 1 (vide)", "Remplir Matrice 2 (vide)", "Calcul", "retour"};
 
-    liste_choix s_choix = {5, 5, choix_somme_deux_matrices};
+    liste_choix s_choix = {2, 5, choix_somme_deux_matrices};
 
     Matrice m1, m2, m3;
 
@@ -1216,15 +1331,15 @@ void multiplication_deux_matrices()
 
     while (ns_choix != 4)
     {
-        ns_choix = afficher_menu(s_choix);
-
         if ((m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements) && (m2.nombre_colonnes * m2.nombre_lignes == m2.nombre_elements))
         {
             if (m1.nombre_colonnes == m2.nombre_lignes)
             {
                 valide = 1;
+                s_choix.nombre_choix_valide = 5;
             }
         }
+        ns_choix = afficher_menu(s_choix);
 
         if (ns_choix == 1)
         {
@@ -1283,7 +1398,7 @@ void multiplication_matrice_nombre()
 
     char *choix_multiplication_matrice_nombre[] = {" Multiplication Matrice par un nombre ", "Remplir Matrice (vide)", "Donner le nombre", "Calcul", "retour"};
 
-    liste_choix s_choix = {5, 5, choix_multiplication_matrice_nombre};
+    liste_choix s_choix = {2, 5, choix_multiplication_matrice_nombre};
 
     Matrice m1, m2;
 
@@ -1293,6 +1408,10 @@ void multiplication_matrice_nombre()
 
     while (ns_choix != 4)
     {
+        if (valide >= 2)
+        {
+            s_choix.nombre_choix_valide = 5;
+        }
         ns_choix = afficher_menu(s_choix);
 
         if (ns_choix == 1)
@@ -1303,6 +1422,7 @@ void multiplication_matrice_nombre()
             {
                 choix_multiplication_matrice_nombre[1] = "Remplir Matrice 1 (remplie)";
             }
+            valide++;
         }
 
         if (ns_choix == 2)
@@ -1330,20 +1450,16 @@ void multiplication_matrice_nombre()
                     wattroff(stdscr, A_REVERSE);
                 }
             }
+            n = atoi(str_n);
+            valide++;
 
             werase(stdscr);
             refresh();
-
-            if (m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements)
-            {
-                valide = 1;
-                n = atoi(str_n);
-            }
         }
 
         if (ns_choix == 3)
         {
-            if (valide == 1)
+            if (valide == 2)
             {
                 m2 = op_multiplication_matrice_nombre(m1, n);
                 char *une_liste[] = {"Resultat"};
@@ -1382,7 +1498,7 @@ void difference_deux_matrices()
 
     char *choix_somme_deux_matrices[] = {" Difference de deux matrices ", "Remplir Matrice 1 (vide)", "Remplir Matrice 2 (vide)", "Calcul", "retour"};
 
-    liste_choix s_choix = {5, 5, choix_somme_deux_matrices};
+    liste_choix s_choix = {2, 5, choix_somme_deux_matrices};
 
     Matrice m1, m2, m3;
 
@@ -1390,12 +1506,12 @@ void difference_deux_matrices()
 
     while (ns_choix != 4)
     {
-        ns_choix = afficher_menu(s_choix);
-
         if ((m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements) && (m2.nombre_colonnes * m2.nombre_lignes == m2.nombre_elements))
         {
             valide = 1;
+            s_choix.nombre_choix_valide = 5;
         }
+        ns_choix = afficher_menu(s_choix);
 
         if (ns_choix == 1)
         {
@@ -1458,7 +1574,7 @@ void somme_deux_matrices()
 
     char *choix_somme_deux_matrices[] = {" Somme de deux matrices ", "Remplir Matrice 1 (vide)", "Remplir Matrice 2 (vide)", "Calcul", "retour"};
 
-    liste_choix s_choix = {5, 5, choix_somme_deux_matrices};
+    liste_choix s_choix = {2, 5, choix_somme_deux_matrices};
 
     Matrice m1, m2, m3;
 
@@ -1466,12 +1582,12 @@ void somme_deux_matrices()
 
     while (ns_choix != 4)
     {
-        ns_choix = afficher_menu(s_choix);
-
         if ((m1.nombre_colonnes * m1.nombre_lignes == m1.nombre_elements) && (m2.nombre_colonnes * m2.nombre_lignes == m2.nombre_elements) && (m1.nombre_colonnes == m2.nombre_colonnes) && (m1.nombre_lignes == m2.nombre_lignes))
         {
             valide = 1;
+            s_choix.nombre_choix_valide = 5;
         }
+        ns_choix = afficher_menu(s_choix);
 
         if (ns_choix == 1)
         {
@@ -1875,10 +1991,10 @@ Matrice creation_matrice()
     mvprintw(9, 50, "%s", str_n);
     wattroff(stdscr, A_REVERSE);
 
-    while (c != 10 || k == 0)
+    while ((c != 10 || k == 0) && atoi(str_n) == 0)
     {
         c = wgetch(stdscr);
-        if (c > 48 && c < 58 && k < 2)
+        if (c > 47 && c < 58 && k < 2)
         {
             str_n[k] = c;
             str_n[k + 1] = '\0';
@@ -2013,7 +2129,7 @@ void print_menu(WINDOW *fenetre_menu, int selection, liste_choix choix)
 
             wattron(fenetre_menu, COLOR_PAIR(1));
         }
-        if (selection == i + 1) /* Highlight the present choice */
+        if (selection == i + 1)
         {
             wattron(fenetre_menu, A_REVERSE);
             mvwprintw(fenetre_menu, y, (25 - strlen(choix.liste[i]) / 2), "%s", choix.liste[i]);
