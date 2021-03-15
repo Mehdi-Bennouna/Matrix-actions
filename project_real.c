@@ -58,7 +58,6 @@ char *liste_choix_1[] = {
     "- Difference de deux matrices -",
     "- Multiplication d\'une matrice par un nombre -",
     "- Produit de deux matrices -",
-    "- Inverse d\'une matrice -",
     "- Retour -"};
 
 char *liste_choix_2[] = {
@@ -113,8 +112,8 @@ void affichage_matrice_mot(Matrice_char m);
 void affichage_struct_vect(struct Element_vect_mots *tab);
 void suprime_liste(struct Element_vect_mots *tab);
 void op_afficher_sous_matrices(Matrice m, Matrice temp_mat);
-
 void afficher_sous_matrices();
+void afficher_entete();
 
 //void affichage_op_deux_matrices(Matrice m1, Matrice m2, Matrice m3, char operation);
 
@@ -154,7 +153,7 @@ int main()
     cbreak();
     curs_set(0);
     start_color(); /* Start color 			*/
-
+    afficher_entete();
     liste_choix choix = {5, 5, liste_choix_0}; //initialisation au menu principal
     int n_liste_choix = 0;
 
@@ -164,11 +163,11 @@ int main()
 
         if (n_liste_choix == 1)
         {
-            while (n_liste_choix != 6)
+            while (n_liste_choix != 5)
             {
                 choix.liste = liste_choix_1;
-                choix.nombre_choix = 7;
-                choix.nombre_choix_valide = 7;
+                choix.nombre_choix = 6;
+                choix.nombre_choix_valide = 6;
 
                 n_liste_choix = afficher_menu(choix);
 
@@ -187,10 +186,6 @@ int main()
                 else if (n_liste_choix == 4)
                 {
                     multiplication_deux_matrices();
-                }
-                else if (n_liste_choix == 5)
-                {
-                    //inverse de matrice
                 }
             }
             choix.liste = liste_choix_0;
@@ -426,7 +421,7 @@ Matrice op_transpose_matrice(Matrice m1)
     return m2;
 }
 
-Matrice op_tri_matrice(Matrice m1)
+Matrice op_tri_matrice_decr(Matrice m1)
 {
     int min;
 
@@ -445,6 +440,34 @@ Matrice op_tri_matrice(Matrice m1)
                         min = m1.mat[x][y];
                         m1.mat[x][y] = m1.mat[i][j];
                         m1.mat[i][j] = min;
+                    }
+                }
+            }
+        }
+    }
+
+    return m1;
+}
+
+Matrice op_tri_matrice_croi(Matrice m1)
+{
+    int max;
+
+    for (int i = 0; i < m1.nombre_lignes; i++)
+    {
+        for (int j = 0; j < m1.nombre_colonnes; j++)
+        {
+            max = m1.mat[i][j];
+
+            for (int x = 0; x < m1.nombre_lignes; x++)
+            {
+                for (int y = 0; y < m1.nombre_colonnes; y++)
+                {
+                    if (m1.mat[x][y] >= max)
+                    {
+                        max = m1.mat[x][y];
+                        m1.mat[x][y] = m1.mat[i][j];
+                        m1.mat[i][j] = max;
                     }
                 }
             }
@@ -713,8 +736,6 @@ void op_afficher_sous_matrices(Matrice m, Matrice temp_mat)
             posx = 50 - (LARGEUR / 2);
             posy = 12 - (HAUTEUR / 2);
             affichage_matrice(temp_mat, 1, posx, posy);
-            wgetch(stdscr);
-
             j++;
         }
         i++;
@@ -724,6 +745,22 @@ void op_afficher_sous_matrices(Matrice m, Matrice temp_mat)
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  FONCTIONS    CALCUL ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
 
 //--------------------------------   FONCTIONS    AFFICHAGE ---------------------------------------------------------------------
+void afficher_entete()
+{
+    box(stdscr, 0, 0);
+    mvwprintw(stdscr, 6, 50 - (strlen("Mini-projet de TP Algorithme") / 2), "Mini - projet de TP Algorithme ");
+    mvwprintw(stdscr, 8, 50 - ((strlen("Vecteurs, matrices et listes chainees") / 2)), "Vecteurs, matrices et listes chainees");
+    mvwprintw(stdscr, 10, 50 - (strlen("Par") / 2), "Par");
+    mvwprintw(stdscr, 14, 50 - (strlen("BENNOUNA Mohamed Mehdi") / 2), "BENNOUNA Mohamed Mehdi");
+    mvwprintw(stdscr, 15, 50 - (strlen("LOUNAS Katia") / 2), "LOUNAS Katia");
+    wattron(stdscr, A_REVERSE);
+    mvwprintw(stdscr, 21, 50 - (strlen("- Continuer - ") / 2), "- Continuer -");
+    wattroff(stdscr, A_REVERSE);
+    wgetch(stdscr);
+    werase(stdscr);
+    refresh();
+}
+
 void afficher_sous_matrices()
 {
     int ns_choix;
@@ -1200,19 +1237,19 @@ void tri_matrice()
 {
     int ns_choix = 0;
 
-    char *choix_multiplication_matrice_nombre[] = {" Tri Matrice ", "Remplir Matrice (vide)", "Calcul", "retour"};
+    char *choix_multiplication_matrice_nombre[] = {" Tri Matrice ", "Remplir Matrice (vide)", "tri decroissant", "tri croissant", "retour"};
 
-    liste_choix s_choix = {1, 4, choix_multiplication_matrice_nombre};
+    liste_choix s_choix = {1, 5, choix_multiplication_matrice_nombre};
 
     Matrice m1;
 
     int valide = 0;
 
-    while (ns_choix != 3)
+    while (ns_choix != 4)
     {
         if (valide == 1)
         {
-            s_choix.nombre_choix_valide = 4;
+            s_choix.nombre_choix_valide = 5;
         }
         ns_choix = afficher_menu(s_choix);
 
@@ -1229,7 +1266,7 @@ void tri_matrice()
 
             if (valide == 1)
             {
-                m1 = op_tri_matrice(m1);
+                m1 = op_tri_matrice_decr(m1);
                 char *une_liste[] = {"Resultat"};
                 liste_choix s_choix = {1, 1, une_liste};
                 afficher_cadre(s_choix);
@@ -1246,7 +1283,33 @@ void tri_matrice()
                 int x = 50 - (LARGEUR / 2);
                 int y = 12 - (HAUTEUR / 2);
                 affichage_matrice(m1, 1, x, y);
-                wgetch(stdscr);
+            }
+            else
+            {
+                popup_erreur(0);
+            }
+        }
+        else if (ns_choix == 3)
+        {
+            if (valide == 1)
+            {
+                m1 = op_tri_matrice_croi(m1);
+                char *une_liste[] = {"Resultat"};
+                liste_choix s_choix = {1, 1, une_liste};
+                afficher_cadre(s_choix);
+
+                int *tmax;
+                tmax = max_colonnes(m1); //calcul des dimesions de depart de la matrice
+                int HAUTEUR = (2 * m1.nombre_lignes) + 1;
+                int LARGEUR = 0;
+                for (int i = 0; i < m1.nombre_colonnes; i++)
+                {
+                    LARGEUR += tmax[i];
+                }
+                LARGEUR += (2 * m1.nombre_colonnes) + 2; //HAUTEUR LARGEUR SONT SET
+                int x = 50 - (LARGEUR / 2);
+                int y = 12 - (HAUTEUR / 2);
+                affichage_matrice(m1, 1, x, y);
             }
             else
             {
@@ -1307,7 +1370,6 @@ void transpose_matrice()
                 int x = 50 - (LARGEUR / 2);
                 int y = 12 - (HAUTEUR / 2);
                 affichage_matrice(m2, 1, x, y);
-                wgetch(stdscr);
             }
             else
             {
@@ -1382,7 +1444,6 @@ void multiplication_deux_matrices()
                 int x = 50 - (LARGEUR / 2);
                 int y = 12 - (HAUTEUR / 2);
                 affichage_matrice(m3, 1, x, y);
-                wgetch(stdscr);
             }
             else
             {
@@ -1478,7 +1539,6 @@ void multiplication_matrice_nombre()
                 int x = 50 - (LARGEUR / 2);
                 int y = 12 - (HAUTEUR / 2);
                 affichage_matrice(m2, 1, x, y);
-                wgetch(stdscr);
             }
             else
             {
@@ -1554,7 +1614,6 @@ void difference_deux_matrices()
                 int x = 50 - (LARGEUR / 2);
                 int y = 12 - (HAUTEUR / 2);
                 affichage_matrice(m3, 1, x, y);
-                wgetch(stdscr);
             }
             else
             {
@@ -1630,7 +1689,6 @@ void somme_deux_matrices()
                 int x = 50 - (LARGEUR / 2);
                 int y = 12 - (HAUTEUR / 2);
                 affichage_matrice(m3, 1, x, y);
-                wgetch(stdscr);
             }
             else
             {
@@ -1706,6 +1764,9 @@ void affichage_matrice(Matrice m, int type, int posx, int posy)
             }
             posy += 2;
         }
+        wrefresh(fenetre_matrice);
+        wgetch(fenetre_matrice);
+        werase(fenetre_matrice);
         wrefresh(fenetre_matrice);
     }
     else //matrice float
